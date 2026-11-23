@@ -17,14 +17,17 @@ const withLockScreen = base.extend<{
   sensor: 'faceid' | 'fingerprint';
   waitForPrompt: () => Promise<void>;
 }>({
-  lockScreen: async ({ app, device, platform, screen }, use) => {
-    if (platform === 'ios') await device.enrollBiometrics('faceid', true);
-    await app.open();
-    // The first launch waits for Metro to bundle the app.
-    await expect(screen.getByTestId('unlock')).toBeVisible({ timeout: 60_000 });
-    await use();
-    if (platform === 'ios') await device.enrollBiometrics('faceid', true);
-  },
+  lockScreen: [
+    async ({ app, device, platform, screen }, use) => {
+      if (platform === 'ios') await device.enrollBiometrics('faceid', true);
+      await app.open();
+      // The first launch waits for Metro to bundle the app.
+      await expect(screen.getByTestId('unlock')).toBeVisible({ timeout: 60_000 });
+      await use();
+      if (platform === 'ios') await device.enrollBiometrics('faceid', true);
+    },
+    { auto: true },
+  ],
 
   sensor: async ({ platform }, use) => {
     await use(platform === 'ios' ? 'faceid' : 'fingerprint');
